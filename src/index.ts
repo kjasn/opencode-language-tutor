@@ -1,21 +1,129 @@
 import type { Plugin } from "@opencode-ai/plugin";
+import { getPromptText, shouldCheckPrompt } from "./core.ts";
+import { SettingsStore } from "./setting.ts";
+import { checkWriting, translateResponse } from "./tutor-llm.ts";
+import { TutorStateStore } from "./tutor-state.ts";
 
 /**
  * Language Tutor Plugin
  */
 
 export const LanguageTutorPlugin: Plugin = async ({ client }) => {
+    const settingsStore = new SettingsStore();
+    const tutorStateStore = new TutorStateStore();
+    const temporarySessions = new Set<string>();
+    const translatedMessageIDs = new Set<string>();
+
     return {
         event: async ({ event }) => {
-            if (event.type === "session.created") {
-                await client.tui.showToast({
-                    body: {
-                        message: "Language Tutor loaded",
-                        variant: "success",
-                        duration: 3_000,
-                    },
-                });
+            if (event.type !== "message.updated") return;
+            const assistant = event.properties.info;
+            if (
+                assistant.role !== "assistant" ||
+                !assistant.time.completed ||
+                assistant.error ||
+                temporarySessions.has(assistant.sessionID) ||
+                translatedMessageIDs.has(assistant.id)
+            ) {
+                return;
             }
+            translatedMessageIDs.add(assistant.id);
+            void scheduleTranslation(assistant.sessionID, assistant.id, {
+                providerID: assistant.providerID,
+                modelID: assistant.modelID,
+            });
+        },
+
+        "chat.message": async (input, output) => {
+            if (temporarySessions.has(input.sessionID)) return;
+            const text = getPromptText(output.parts);
+            if (!shouldCheckPrompt(text)) return;
+
+            const settings = await settingsStore.load();
+            if (!settings.writingCheckEnabled) return;
+            void checkWritingInBackground(input.sessionID, output.message.id, text, output.message.model, settings);
         },
     };
+
+    async function checkWritingInBackground(
+        sessionID: string,
+        messageID: string,
+        text: string,
+        model: { providerID: string; modelID: string },
+        settings: Awaited<ReturnType<SettingsStore["load"]>>,
+    ): Promise<void> {
+        try {
+            const issues = await checkWriting(client, text, settings, model, trackTemporarySession);
+            await tutorStateStore.update(sessionID, {
+                writing: { sourceMessageID: messageID, issues, updatedAt: Date.now() },
+            });
+            const firstIssue = issues[0];
+            const feedback = firstIssue
+                ? `${firstIssue.reason} · ${firstIssue.original} → ${firstIssue.suggestion}`
+                : undefined;
+            const message = `${feedback}`;
+            await client.tui.showToast({
+                body: {
+                    title: "Writing check",
+                    message: message.slice(0, 180),
+                    variant: issues.length ? "info" : "success",
+                    duration: 5_000,
+                },
+            });
+        } catch {
+            await client.tui.showToast({
+                body: {
+                    title: "Writing check",
+                    message: "Could not check this prompt.",
+                    variant: "warning",
+                    duration: 4_000,
+                },
+            });
+        }
+    }
+
+    async function translateInBackground(
+        sessionID: string,
+        messageID: string,
+        text: string,
+        model: { providerID: string; modelID: string },
+        settings: Awaited<ReturnType<SettingsStore["load"]>>,
+    ): Promise<void> {
+        await tutorStateStore.update(sessionID, {
+            translation: { sourceMessageID: messageID, status: "pending", updatedAt: Date.now() },
+        });
+        try {
+            const translated = await translateResponse(client, text, settings, model, trackTemporarySession);
+            await tutorStateStore.recordTranslation(sessionID, {
+                sourceMessageID: messageID,
+                text: translated,
+                updatedAt: Date.now(),
+            });
+        } catch {
+            await tutorStateStore.update(sessionID, {
+                translation: { sourceMessageID: messageID, status: "error", updatedAt: Date.now() },
+            });
+        }
+    }
+
+    async function scheduleTranslation(
+        sessionID: string,
+        messageID: string,
+        model: { providerID: string; modelID: string },
+    ): Promise<void> {
+        const settings = await settingsStore.load();
+        if (!settings.autoTranslate) return;
+
+        const message = await client.session.message({ path: { id: sessionID, messageID } });
+        if (message.error || !message.data) return;
+        const text = getPromptText(message.data.parts);
+        if (!text) return;
+
+        await translateInBackground(sessionID, messageID, text, model, settings);
+    }
+
+    function trackTemporarySession(sessionID: string, active: boolean): void {
+        if (active) temporarySessions.add(sessionID);
+        else temporarySessions.delete(sessionID);
+    }
 };
