@@ -11,6 +11,6 @@ test("foldLongCodeBlocks folds fenced blocks longer than three lines", () => {
     const text = "```ts\n1\n2\n3\n4\n5\n```";
 
     expect(foldLongCodeBlocks(text)).toBe(
-        "```ts\n1\n2\n3\n… 2 more lines folded; open /lang-translation to view all\n```",
+        "```ts\n1\n2\n3\n… 2 more lines folded; open /translations to view all\n```",
     );
 });

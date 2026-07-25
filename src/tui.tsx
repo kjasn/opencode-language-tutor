@@ -166,7 +166,7 @@ export function foldLongCodeBlocks(text: string, visibleLines = 3): string {
     if (lines.length <= visibleLines) return _block;
 
     const hiddenLines = lines.length - visibleLines;
-    return `\`\`\`${language}\n${lines.slice(0, visibleLines).join("\n")}\n… ${hiddenLines} more line${hiddenLines === 1 ? "" : "s"} folded; open /lang-translation to view all\n\`\`\``;
+    return `\`\`\`${language}\n${lines.slice(0, visibleLines).join("\n")}\n… ${hiddenLines} more line${hiddenLines === 1 ? "" : "s"} folded; open /translations to view all\n\`\`\``;
   });
 }
 
@@ -241,7 +241,7 @@ const plugin: TuiPluginModule = {
         title: "Language Tutor translations",
         value: "language-tutor.translations",
         description: "Browse completed assistant translations in this session",
-        slash: { name: "lang-translation" },
+        slash: { name: "translations" },
         onSelect: () => openTranslationsDialog(api),
       },
       {
@@ -280,7 +280,7 @@ const plugin: TuiPluginModule = {
                         : "Translation failed. Check the selected model in /lang-tu."}
                   </text>
                   {state()?.translation?.status === "ready" && (
-                    <text fg={api.theme.current.textMuted}>Browse all: /lang-translation</text>
+                    <text fg={api.theme.current.textMuted}>Browse all: /translations</text>
                   )}
                 </box>
               )}
