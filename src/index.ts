@@ -57,11 +57,9 @@ export const LanguageTutorPlugin: Plugin = async ({ client }) => {
             await tutorStateStore.update(sessionID, {
                 writing: { sourceMessageID: messageID, issues, updatedAt: Date.now() },
             });
-            const firstIssue = issues[0];
-            const feedback = firstIssue
-                ? `${firstIssue.reason} · ${firstIssue.original} → ${firstIssue.suggestion}`
-                : undefined;
-            const message = `${feedback}`;
+            const message = issues.length
+                ? issues.map((issue) => `${issue.reason} · ${issue.original} → ${issue.suggestion}`).join("\n")
+                : "No useful correction found.";
             await client.tui.showToast({
                 body: {
                     title: "Writing check",
