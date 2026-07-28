@@ -1,5 +1,7 @@
 # OpenCode Language Tutor
 
+[English](README.md) | [简体中文](README.zh-CN.md)
+
 > Heavily inspired by [PI Language Tutor](https://github.com/mackt/pi-language-tutor)
 
 This is a language tutor plugin for the
@@ -7,6 +9,11 @@ This is a language tutor plugin for the
 responses into your native language, and it can also check your prompts and
 give up to three useful corrections. It is intended to make it easier to communicate
 with an agent in the language that you are learning.
+
+> [!warning]
+> Because OpenCode does not provide the ability to re-render historical transcript
+> message, the plugin cannot display translations below each paragraph of the
+> original text, nor can it display writing checks and suggestions below user prompts.
 
 ## Quick Start
 
@@ -20,9 +27,11 @@ after every assistant response.
 ### Use Local LLM
 
 <details>
-<summary>Use [Ollama local models](https://docs.ollama.com/integrations/opencode#opencode) for fast, low-cost translation tasks.</summary>
+<summary>Use Ollama local models for fast, low-cost translation tasks.</summary>
 
 For example, add the following configuration to your OpenCode config file in `~/.config/opencode/opencode.json`:
+
+Click [here](https://docs.ollama.com/integrations/opencode#opencode) for details.
 
 ```json
 {
@@ -50,14 +59,14 @@ For example, add the following configuration to your OpenCode config file in `~/
 
 Writing-check results are shown by OpenCode's toast notification in the
 **upper-right corner**. Translations appear below the prompt; use
-`/lang-translation` to browse earlier translations in the current session.
+`/translations` to browse earlier translations in the current session.
 
 ## More Details
 
 The plugin checks eligible prompts for grammar, spelling, and more natural
 wording, then shows up to three useful suggestions in an OpenCode toast. It can also
 translate completed assistant responses and keep recent translations available
-through `/lang-translation`. Configure languages, feature switches, and optional
+through `/translations`. Configure languages, feature switches, and optional
 separate models with `/lang-tu`; otherwise it uses the current session model.
 
 It is a lightweight helper, not a full language teacher: it does not rewrite
@@ -69,9 +78,8 @@ tools disabled, so they do not affect the main conversation._
 ### Internal No-Tools Agent
 
 The plugin uses `.opencode/agents/language-tutor.md` for its isolated grammar
-and translation calls. This is active OpenCode agent configuration, not a
-readme: its `tools: { "*": false }` setting prevents tool schemas from being
-sent to translation-only models such as TranslateGemma. It affects only the
+and translation calls. Its `tools: { "*": false }` setting prevents tool
+schemas from being sent to translation-only models. It affects only the
 plugin's `language-tutor` agent, not your normal Build or Plan agents.
 
 Inspect the resolved configuration from the project root with:
@@ -83,6 +91,8 @@ opencode debug config | rg -n -A12 -B2 '"language-tutor"'
 ## TODO List
 
 [ ] Replace write check suggestions toast notification with a **persistent** display.
+
 [ ] Make translation display in a interactive way, for example large translation
 result can be displayed in a **scrollable area** and auto fold large code blocks.
+
 [ ] ...
