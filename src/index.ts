@@ -54,17 +54,19 @@ export const LanguageTutorPlugin: Plugin = async ({ client }) => {
     ): Promise<void> {
         try {
             const issues = await checkWriting(client, text, settings, model, trackTemporarySession);
+            if (issues.length === 0) return;
+
             await tutorStateStore.update(sessionID, {
                 writing: { sourceMessageID: messageID, issues, updatedAt: Date.now() },
             });
-            const message = issues.length
-                ? issues.map((issue) => `${issue.reason} · ${issue.original} → ${issue.suggestion}`).join("\n")
-                : "No useful correction found.";
+            const message = issues
+                .map((issue) => `${issue.correctionType}: ${issue.original} -> ${issue.corrected}`)
+                .join("\n");
             await client.tui.showToast({
                 body: {
                     title: "Writing check",
                     message: message.slice(0, 180),
-                    variant: issues.length ? "info" : "success",
+                    variant: "info",
                     duration: 5_000,
                 },
             });

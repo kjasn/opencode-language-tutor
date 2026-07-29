@@ -3,9 +3,10 @@ import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 
 export type WritingIssue = {
+    /** A short, user-facing category label in the user's native language. */
+    correctionType: string;
     original: string;
-    suggestion: string;
-    reason: string;
+    corrected: string;
 };
 
 export type TutorSessionState = {
