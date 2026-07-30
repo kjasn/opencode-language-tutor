@@ -1,0 +1,72 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  pull_request:
+    branches:
+      - main
+    types:
+      - closed
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    if: github.event_name == 'push' || github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out release commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.merge_commit_sha || github.ref }}
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Type-check
+        run: bun run check
+
+      - name: Test
+        run: bun test
+
+      - name: Set archive name
+        id: archive
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          TAG_NAME: ${{ github.ref_name }}
+        run: |
+          if [[ "$EVENT_NAME" == "push" ]]; then
+            version="$TAG_NAME"
+          else
+            version="main-$(git rev-parse --short HEAD)"
+          fi
+          echo "name=opencode-language-tutor-$version" >> "$GITHUB_OUTPUT"
+
+      - name: Create release archives
+        env:
+          ARCHIVE_NAME: ${{ steps.archive.outputs.name }}
+        run: |
+          mkdir -p dist
+          git archive --format=tar.gz --prefix="$ARCHIVE_NAME/" -o "dist/$ARCHIVE_NAME.tar.gz" HEAD
+          git archive --format=zip --prefix="$ARCHIVE_NAME/" -o "dist/$ARCHIVE_NAME.zip" HEAD
+
+      - name: Upload merged-main artifacts
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.archive.outputs.name }}
+          path: dist/*
+          if-no-files-found: error
+
+      - name: Create GitHub release
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" dist/* --generate-notes --verify-tag

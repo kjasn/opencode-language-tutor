@@ -104,6 +104,22 @@ Inspect the resolved configuration from the project root with:
 opencode debug config | rg -n -A12 -B2 '"language-tutor"'
 ```
 
+## Releases
+
+The release workflow runs the type check and test suite, then creates source
+archives whenever a pull request is merged into `main`. Those archives are
+available as artifacts on the workflow run.
+
+To publish a GitHub release, push a version tag:
+
+```sh
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+A `v*` tag creates a GitHub release with generated release notes and `.tar.gz`
+and `.zip` source archives.
+
 ## TODO List
 
 [ ] Replace write check suggestions toast notification with a **persistent** display.

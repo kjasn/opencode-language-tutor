@@ -10,6 +10,11 @@
 
 Keep new behavior in the smallest relevant module. Prefer importing with explicit `.ts` or `.tsx` extensions, matching the existing source.
 
+## Documentation
+
+- `README.md` is the English README, and `README.zh-CN.md` is its Simplified Chinese translation.
+- Keep both README files synchronized whenever either one changes. Preserve equivalent sections, commands, examples, warnings, and behavior descriptions in both languages.
+
 ## OpenCode Integration
 
 - `.opencode/agents/language-tutor.md` is executable OpenCode agent configuration for isolated tutor model calls. It is not documentation.
@@ -25,6 +30,11 @@ Keep new behavior in the smallest relevant module. Prefer importing with explici
 - `bun test test/setting.test.ts` runs one test file while iterating.
 
 There is no separate build or lint script currently. Run both `bun run check` and `bun test` before submitting changes.
+
+## Releases
+
+- `.github/workflows/release.yml` validates and packages every pull request merged into `main`, publishing the archives as workflow artifacts.
+- Pushing a `v*` tag, for example `v0.1.0`, validates the tagged commit and creates a GitHub release with source archives and generated release notes.
 
 ## Coding Style & Naming Conventions
 

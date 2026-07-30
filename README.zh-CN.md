@@ -84,6 +84,19 @@ opencode
 opencode debug config | rg -n -A12 -B2 '"language-tutor"'
 ```
 
+## 发布
+
+每当拉取请求合并到 `main` 时，发布工作流都会运行类型检查和测试套件，然后创建源码归档。你可以在对应的工作流运行页面下载这些构建产物。
+
+如需发布 GitHub Release，请推送版本标签：
+
+```sh
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+推送 `v*` 标签后，工作流会创建带有自动生成发行说明以及 `.tar.gz` 和 `.zip` 源码归档的 GitHub Release。
+
 ## 待办事项
 
 [ ] 将写作检查建议从 toast 通知改为**持久化**显示。
