@@ -36,7 +36,7 @@ opencode
 ### 使用本地大语言模型
 
 <details>
-<summary>使用 Ollama 本地模型快速、低成本地完成翻译任务。</summary>
+<summary>使用 Ollama 本地模型快速、低成本地完成写作检查和翻译任务。</summary>
 
 例如，将以下配置添加到位于 `~/.config/opencode/opencode.json` 的 OpenCode 配置文件中：
 
@@ -53,8 +53,8 @@ opencode
         "baseURL": "http://localhost:11434/v1"
       },
       "models": {
-        "translategemma:4b-it-q4_K_M": {
-          "name": "translategemma:4b-it-q4_K_M"
+        "qwen2.5:7b": {
+          "name": "qwen2.5:7b"
         }
       }
     }

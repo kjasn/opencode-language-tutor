@@ -45,7 +45,7 @@ assistant response.
 ### Use Local LLM
 
 <details>
-<summary>Use Ollama local models for fast, low-cost translation tasks.</summary>
+<summary>Use Ollama local models for fast, low-cost writing-check and translation tasks.</summary>
 
 For example, add the following configuration to your OpenCode config file in `~/.config/opencode/opencode.json`:
 
@@ -62,8 +62,8 @@ Click [here](https://docs.ollama.com/integrations/opencode#opencode) for details
         "baseURL": "http://localhost:11434/v1"
       },
       "models": {
-        "translategemma:4b-it-q4_K_M": {
-          "name": "translategemma:4b-it-q4_K_M"
+        "qwen2.5:7b": {
+          "name": "qwen2.5:7b"
         }
       }
     }
