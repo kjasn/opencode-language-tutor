@@ -1,6 +1,6 @@
 # OpenCode Language Tutor
 
-[English](README.md) | [简体中文](README.zh-CN.md)
+English | [简体中文](README.zh-CN.md)
 
 > Heavily inspired by [PI Language Tutor](https://github.com/mackt/pi-language-tutor)
 
@@ -14,8 +14,24 @@ with an agent in the language that you are learning.
 > Because OpenCode does not provide the ability to re-render historical transcript
 > message, the plugin cannot display translations below each paragraph of the
 > original text, nor can it display writing checks and suggestions below user prompts.
+> This plugin is still under development!
 
 ## Quick Start
+
+### Install from npm
+
+> [!note]
+> Not available
+
+### Using Git
+
+```bash
+git clone https://github.com/kjasn/opencode-language-tutor.git
+
+cd opencode-language-tutor
+
+opencode
+```
 
 Default configuration is set to learn English in simple Chinese.
 You can change the settings by `/lang-tu` command.

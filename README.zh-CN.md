@@ -1,6 +1,6 @@
 # OpenCode Language Tutor
 
-[English](README.md) | [简体中文](README.zh-CN.md)
+[English](README.md) | 简体中文
 
 > 深受 [PI Language Tutor](https://github.com/mackt/pi-language-tutor) 启发
 
@@ -9,8 +9,24 @@
 > [!warning]
 > 由于 OpenCode 未开放重新渲染历史回话的能力，因此插件无法做到在原文每个
 > 段落下方显示翻译以及在用户提示词下方显示写做检查和建议。
+> 当前插件仍处于开发阶段！
 
 ## 快速开始
+
+### 使用 npm 安装
+
+> [!note]
+> 。。。
+
+### 使用 Git
+
+```bash
+git clone https://github.com/kjasn/opencode-language-tutor.git
+
+cd opencode-language-tutor
+
+opencode
+```
 
 默认配置为：学习英语，并使用简体中文作为母语。
 你可以通过 `/lang-tu` 命令修改设置。
