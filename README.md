@@ -36,9 +36,11 @@ opencode
 Default configuration is set to learn English in simple Chinese.
 You can change the settings by `/lang-tu` command.
 
-Writing checks are enabled by default. Automatic translation is disabled by
-default, so enable **Auto-translate** in `/lang-tu` when you want translations
-after every assistant response.
+Automatic writing checks are enabled by default. They start in the background
+as soon as an eligible user message is sent, without waiting for the main
+assistant response. Automatic translation is disabled by default, so enable
+**Auto-translate** in `/lang-tu` when you want translations after every
+assistant response.
 
 ### Use Local LLM
 
@@ -70,6 +72,11 @@ Click [here](https://docs.ollama.com/integrations/opencode#opencode) for details
 ```
 
 </details>
+
+Writing-check and translation models can be selected independently in
+`/lang-tu`. For responsive writing-check toasts, prefer a small, fast general
+instruction model. Larger local models may take noticeably longer, especially
+when Ollama must load a cold model into memory.
 
 ## Example
 
@@ -119,6 +126,26 @@ git push origin v0.1.0
 
 A `v*` tag creates a GitHub release with generated release notes and `.tar.gz`
 and `.zip` source archives.
+## Debugging
+
+The plugin writes diagnostics through OpenCode's logging API instead of
+printing into the prompt panel. Find the active log directory with:
+
+```sh
+opencode debug paths
+```
+
+Follow this plugin's entries in another terminal (the default log path is shown
+below):
+
+```sh
+tail -f ~/.local/share/opencode/log/opencode.log \
+  | rg --line-buffered '\[LT\]'
+```
+
+Each isolated tutor call records `createSessionMs`, `modelRequestMs`,
+`deleteSessionMs`, and `totalMs`. In most slow local-model cases,
+`modelRequestMs` reveals whether model loading or inference is the bottleneck.
 
 ## TODO List
 
