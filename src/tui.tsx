@@ -94,7 +94,7 @@ async function openSettingsDialog(api: TuiApi): Promise<void> {
         },
         {
           title: "Writing check",
-          description: settingLabel(settings.writingCheckEnabled),
+          description: settingLabel(settings.autoWriteCheck),
           value: "writing-check",
         },
         {
@@ -127,7 +127,7 @@ async function openSettingsDialog(api: TuiApi): Promise<void> {
             openLanguageDialog(api, "nativeLang");
             break;
           case "writing-check":
-            void saveSettingsChange(api, { writingCheckEnabled: !settings.writingCheckEnabled });
+            void saveSettingsChange(api, { autoWriteCheck: !settings.autoWriteCheck });
             break;
           case "auto-translate":
             void saveSettingsChange(api, { autoTranslate: !settings.autoTranslate });

@@ -40,7 +40,7 @@ export const LanguageTutorPlugin: Plugin = async ({ client }) => {
             if (!shouldCheckPrompt(text)) return;
 
             const settings = await settingsStore.load();
-            if (!settings.writingCheckEnabled) return;
+            if (!settings.autoWriteCheck) return;
             void checkWritingInBackground(input.sessionID, output.message.id, text, output.message.model, settings);
         },
     };
@@ -53,6 +53,15 @@ export const LanguageTutorPlugin: Plugin = async ({ client }) => {
         settings: Awaited<ReturnType<SettingsStore["load"]>>,
     ): Promise<void> {
         try {
+            const startedAt = performance.now();
+            await client.app.log({
+                body: {
+                    service: "language-tutor",
+                    level: "info",
+                    message: "[LT]Test msg before calling llm",
+                },
+            });
+
             const issues = await checkWriting(client, text, settings, model, trackTemporarySession);
             if (issues.length === 0) return;
 
@@ -67,7 +76,20 @@ export const LanguageTutorPlugin: Plugin = async ({ client }) => {
                     title: "Writing check",
                     message: message.slice(0, 180),
                     variant: "info",
-                    duration: 5_000,
+                    duration: 8_000,
+                },
+            });
+
+            await client.app.log({
+                body: {
+                    service: "language-tutor",
+                    level: "info",
+                    message: "[LT]after calling",
+                    extra: {
+                        duration: performance.now() - startedAt,
+                        issues: issues,
+                        model: settings.writingCheckModel ?? model.modelID,
+                    },
                 },
             });
         } catch {

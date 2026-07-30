@@ -29,7 +29,7 @@ test("checkWriting requests native-language advice and high-impact corrections",
         {
             learningLang: "en",
             nativeLang: "zh-CN",
-            writingCheckEnabled: true,
+            autoWriteCheck: true,
             autoTranslate: false,
         },
         { providerID: "test", modelID: "model" },
@@ -37,15 +37,17 @@ test("checkWriting requests native-language advice and high-impact corrections",
 
     expect(systemPrompt).toContain("native en speaker reviewing a learner's writing");
     expect(systemPrompt).toContain("Learner's native language is zh-CN");
-    expect(systemPrompt).toContain("Only suggest a correction when the expression would make a native speaker uncomfortable");
+    expect(systemPrompt).toContain(
+        "Only suggest a correction when the expression would make a native speaker uncomfortable",
+    );
     expect(systemPrompt).toContain('["grammar","spelling","word choice","optimization"]');
     expect(systemPrompt).toContain("capitalization (unless it is a proper noun)");
     expect(systemPrompt).toContain('reply with exactly "OK" when there is no useful correction');
     expect(systemPrompt).toContain("<correctionType>|<original>|<corrected>");
-    expect(systemPrompt).toContain('choose exactly one lowercase identifier from: ["grammar","spelling","word choice","optimization"]');
-    expect(issues).toEqual([
-        { correctionType: "拼写错误", original: "u", corrected: "you" },
-    ]);
+    expect(systemPrompt).toContain(
+        'choose exactly one lowercase identifier from: ["grammar","spelling","word choice","optimization"]',
+    );
+    expect(issues).toEqual([{ correctionType: "拼写错误", original: "u", corrected: "you" }]);
 });
 
 test("checkWriting rejects an original span not present in the input", async () => {
@@ -72,7 +74,7 @@ test("checkWriting rejects an original span not present in the input", async () 
         {
             learningLang: "en",
             nativeLang: "zh-CN",
-            writingCheckEnabled: true,
+            autoWriteCheck: true,
             autoTranslate: false,
         },
         { providerID: "test", modelID: "model" },

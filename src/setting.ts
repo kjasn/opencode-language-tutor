@@ -20,8 +20,8 @@ export type LanguageTutorSettings = {
     learningLang: string;
     /** Language used for explanations and translations. */
     nativeLang: string;
-    /** Whether writing checks run for eligible user prompts. */
-    writingCheckEnabled: boolean;
+    /** Whether writing checks run automatically for eligible user prompts. */
+    autoWriteCheck: boolean;
     /** Whether completed assistant responses are translated automatically. */
     autoTranslate: boolean;
     /** Optional provider/model ID for writing checks; falls back to the session model. */
@@ -33,7 +33,7 @@ export type LanguageTutorSettings = {
 export const DEFAULT_SETTINGS: Readonly<LanguageTutorSettings> = {
     learningLang: "en",
     nativeLang: "zh-CN",
-    writingCheckEnabled: true,
+    autoWriteCheck: true,
     autoTranslate: false,
 };
 
@@ -58,7 +58,10 @@ export function parseSettings(value: unknown): LanguageTutorSettings {
         learningLang:
             optionalString(raw.learningLang) ?? optionalString(raw.learningLanguage) ?? DEFAULT_SETTINGS.learningLang,
         nativeLang: optionalString(raw.nativeLang) ?? optionalString(raw.nativeLanguage) ?? DEFAULT_SETTINGS.nativeLang,
-        writingCheckEnabled: optionalBoolean(raw.writingCheckEnabled) ?? DEFAULT_SETTINGS.writingCheckEnabled,
+        autoWriteCheck:
+            optionalBoolean(raw.autoWriteCheck) ??
+            optionalBoolean(raw.writingCheckEnabled) ??
+            DEFAULT_SETTINGS.autoWriteCheck,
         autoTranslate: optionalBoolean(raw.autoTranslate) ?? DEFAULT_SETTINGS.autoTranslate,
         writingCheckModel: optionalString(raw.writingCheckModel) ?? optionalString(raw.writingModel),
         translationModel: optionalString(raw.translationModel),

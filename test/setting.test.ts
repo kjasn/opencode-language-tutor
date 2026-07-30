@@ -22,7 +22,7 @@ describe("parseSettings", () => {
             parseSettings({
                 learningLanguage: "ja",
                 nativeLanguage: "en",
-                writingCheckEnabled: false,
+                autoWriteCheck: false,
                 autoTranslate: true,
                 writingModel: "openai/gpt-5-mini",
                 translationModel: 42,
@@ -30,9 +30,18 @@ describe("parseSettings", () => {
         ).toEqual({
             learningLang: "ja",
             nativeLang: "en",
-            writingCheckEnabled: false,
+            autoWriteCheck: false,
             autoTranslate: true,
             writingCheckModel: "openai/gpt-5-mini",
+            translationModel: undefined,
+        });
+    });
+
+    test("migrates the previous writing-check option", () => {
+        expect(parseSettings({ writingCheckEnabled: false })).toEqual({
+            ...DEFAULT_SETTINGS,
+            autoWriteCheck: false,
+            writingCheckModel: undefined,
             translationModel: undefined,
         });
     });
