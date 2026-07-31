@@ -106,9 +106,9 @@ opencode debug config | rg -n -A12 -B2 '"language-tutor"'
 
 ## Releases
 
-The release workflow runs the type check and test suite, then creates source
-archives whenever a pull request is merged into `main`. Those archives are
-available as artifacts on the workflow run.
+The release workflow runs only when a `v*` version tag is pushed. It validates
+the tagged commit with the type check and test suite before publishing the
+release.
 
 To publish a GitHub release, push a version tag:
 

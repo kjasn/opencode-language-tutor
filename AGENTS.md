@@ -33,8 +33,8 @@ There is no separate build or lint script currently. Run both `bun run check` an
 
 ## Releases
 
-- `.github/workflows/release.yml` validates and packages every pull request merged into `main`, publishing the archives as workflow artifacts.
-- Pushing a `v*` tag, for example `v0.1.0`, validates the tagged commit and creates a GitHub release with source archives and generated release notes.
+- `.github/workflows/release.yml` runs only when a `v*` tag is pushed.
+- Pushing a version tag, for example `v0.1.0`, validates the tagged commit and creates a GitHub release with source archives and generated release notes.
 
 ## Coding Style & Naming Conventions
 
