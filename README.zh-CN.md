@@ -86,18 +86,6 @@ opencode
 opencode debug config | rg -n -A12 -B2 '"language-tutor"'
 ```
 
-## 发布
-
-发布工作流仅在推送 `v*` 版本标签时运行。工作流会先对标签指向的提交运行类型检查和测试套件，然后再发布 Release。
-
-如需发布 GitHub Release，请推送版本标签：
-
-```sh
-git tag v0.1.0
-git push origin v0.1.0
-```
-
-推送 `v*` 标签后，工作流会创建带有自动生成发行说明以及 `.tar.gz` 和 `.zip` 源码归档的 GitHub Release。
 ## 调试
 
 插件通过 OpenCode 的日志 API 写入诊断信息，而不会将日志打印到提示词输入面板。使用以下命令查找当前日志目录：

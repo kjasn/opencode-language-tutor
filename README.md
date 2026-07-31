@@ -111,21 +111,6 @@ Inspect the resolved configuration from the project root with:
 opencode debug config | rg -n -A12 -B2 '"language-tutor"'
 ```
 
-## Releases
-
-The release workflow runs only when a `v*` version tag is pushed. It validates
-the tagged commit with the type check and test suite before publishing the
-release.
-
-To publish a GitHub release, push a version tag:
-
-```sh
-git tag v0.1.0
-git push origin v0.1.0
-```
-
-A `v*` tag creates a GitHub release with generated release notes and `.tar.gz`
-and `.zip` source archives.
 ## Debugging
 
 The plugin writes diagnostics through OpenCode's logging API instead of
