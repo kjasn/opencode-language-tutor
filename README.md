@@ -6,7 +6,7 @@
 
 这是一个用于 [OpenCode](https://github.com/anomalyco/opencode) 的语言学习助手插件。它可以将智能体的回复翻译成你的母语，也可以检查你的提示词并提供最多三条实用的修改建议，帮助你更轻松地使用正在学习的语言与智能体交流。
 
-[展示](./assets/example.png)
+![展示](./assets/example.png)
 
 > [!warning]
 > 由于 OpenCode 未开放重新渲染历史回话的能力，因此插件无法做到在原文每个
@@ -33,7 +33,7 @@ opencode
 默认配置为：学习英语，并使用简体中文作为母语。
 你可以通过 `/lang-tu` 命令修改设置。
 
-[设置](./assets/settings.png)
+![设置](./assets/settings.png)
 
 自动写作检查默认启用。符合条件的用户消息发送后，写作检查会立即在后台启动，无需等待主智能体完成回复。自动翻译默认关闭；如果希望在每次智能体回复后自动显示翻译，请在 `/lang-tu` 中启用 **Auto-translate（自动翻译）**。
 
