@@ -16,6 +16,8 @@ with an agent in the language that you are learning.
 > original text, nor can it display writing checks and suggestions below user prompts.
 > This plugin is still under development!
 
+[Example](./assets/example.png)
+
 ## Quick Start
 
 ### Install from npm
@@ -36,6 +38,8 @@ opencode
 Default configuration is set to learn English in simple Chinese.
 You can change the settings by `/lang-tu` command.
 
+[Settings](./assets/settings.png)
+
 Automatic writing checks are enabled by default. They start in the background
 as soon as an eligible user message is sent, without waiting for the main
 assistant response. Automatic translation is disabled by default, so enable
@@ -46,6 +50,7 @@ assistant response.
 
 <details>
 <summary>Use Ollama local models for fast, low-cost writing-check and translation tasks.</summary>
+<br/>
 
 > [!warning]
 > Small models may not perform well for writing checks.
