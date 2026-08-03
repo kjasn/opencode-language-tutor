@@ -53,7 +53,6 @@ export const LanguageTutorPlugin: Plugin = async ({ client }) => {
         settings: Awaited<ReturnType<SettingsStore["load"]>>,
     ): Promise<void> {
         try {
-            const startedAt = performance.now();
             await client.app.log({
                 body: {
                     service: "language-tutor",
@@ -63,7 +62,9 @@ export const LanguageTutorPlugin: Plugin = async ({ client }) => {
             });
 
             const issues = await checkWriting(client, text, settings, model, trackTemporarySession);
-            if (issues.length === 0) return;
+            if (issues.length === 0) {
+                return;
+            }
 
             await tutorStateStore.update(sessionID, {
                 writing: { sourceMessageID: messageID, issues, updatedAt: Date.now() },
@@ -79,20 +80,7 @@ export const LanguageTutorPlugin: Plugin = async ({ client }) => {
                     duration: 8_000,
                 },
             });
-
-            await client.app.log({
-                body: {
-                    service: "language-tutor",
-                    level: "info",
-                    message: "[LT]after calling",
-                    extra: {
-                        duration: performance.now() - startedAt,
-                        issues: issues,
-                        model: settings.writingCheckModel ?? model.modelID,
-                    },
-                },
-            });
-        } catch {
+        } catch (error) {
             await client.tui.showToast({
                 body: {
                     title: "Writing check",

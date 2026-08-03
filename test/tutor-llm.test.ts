@@ -45,8 +45,10 @@ test("checkWriting requests native-language advice and high-impact corrections",
     expect(systemPrompt).toContain('reply with exactly "OK" when there is no useful correction');
     expect(systemPrompt).toContain("<correctionType>|<original>|<corrected>");
     expect(systemPrompt).toContain(
-        'choose exactly one lowercase identifier from: ["grammar","spelling","word choice","optimization"]',
+        'choose exactly one lowercase identifier from ["grammar","spelling","word choice","optimization"]',
     );
+    expect(systemPrompt).toContain("Do not use | inside original or corrected");
+    expect(systemPrompt).toContain("Do not split one replacement into overlapping or duplicate corrections");
     expect(issues).toEqual([{ correctionType: "拼写错误", original: "u", corrected: "you" }]);
 });
 
@@ -106,6 +108,21 @@ test("parseWritingIssues accepts localized correction types and ignores malforme
     ]);
 });
 
-test("parseWritingIssues accepts the no-correction marker", () => {
-    expect(parseWritingIssues("OK", "zh-CN")).toEqual([]);
+test("parseWritingIssues accepts common local-model formatting", () => {
+    const response = [
+        "Here are the corrections:",
+        "```text",
+        "- SPELLING|u|you",
+        "2. word_choice|make a photo|take a photo",
+        "```",
+    ].join("\n");
+
+    expect(parseWritingIssues(response, "zh-CN")).toEqual([
+        { correctionType: "拼写错误", original: "u", corrected: "you" },
+        { correctionType: "用词错误", original: "make a photo", corrected: "take a photo" },
+    ]);
+});
+
+test("parseWritingIssues accepts common no-correction markers", () => {
+    expect(parseWritingIssues("```text\nOK.\n```", "zh-CN")).toEqual([]);
 });

@@ -64,11 +64,11 @@ export async function checkWriting(
             "Give at most three corrections (for native-language input, only that one issue). Ignore code, commands, paths, intentional product names, and capitalization (unless it is a proper noun). Skip tiny stylistic preferences.",
             'Output protocol: reply with exactly "OK" when there is no useful correction; otherwise reply with up to three correction lines and nothing else.',
             "Each correction line must be exactly: <correctionType>|<original>|<corrected>.",
-            `- correctionType: choose exactly one lowercase identifier from: ${JSON.stringify(correctionTypes)}.`,
-            "- Do not translate correctionType; the application translates it for the user.",
-            "- Do not use | inside any field.",
-            `- original: normally an exact contiguous quote from the ${settings.learningLang} text. For the native-input case, use the whole ${settings.nativeLang} text instead.`,
-            `- corrected: replacement in ${settings.learningLang}, no translation into another language.`,
+            `- correctionType: choose exactly one lowercase identifier from ${JSON.stringify(correctionTypes)} for each correction. Do not translate or rename these identifiers.`,
+            `- original: normally an exact, case-sensitive, contiguous quote from the ${settings.learningLang} text. For the native-input case, use the whole ${settings.nativeLang} text instead.`,
+            `- corrected: the replacement text in ${settings.learningLang}; do not translate it into another language.`,
+            "- Do not use | inside original or corrected.",
+            "When different spans have different problems, output one correction line per span, up to the three-line limit. Do not split one replacement into overlapping or duplicate corrections.",
             `If the text is entirely in ${settings.nativeLang}, treat it as the learner not knowing how to express it in ${settings.learningLang}. Using 'optimization' as the <correctionType>, using the full ${settings.nativeLang} text as <original> and rewrite the user's input in a native way in ${settings.learningLang} serve as <corrected>.`,
         ].join(" "),
 
@@ -76,7 +76,9 @@ export async function checkWriting(
         onTemporarySession,
     });
 
-    return parseWritingIssues(result, settings.nativeLang).filter((issue) => text.includes(issue.original));
+    const parsedIssues = parseWritingIssues(result, settings.nativeLang);
+    const issues = parsedIssues.filter((issue) => text.includes(issue.original));
+    return issues;
 }
 
 export async function translateResponse(
@@ -103,9 +105,7 @@ async function askTutor(
     client: TutorClient,
     input: { model: ModelRef; system: string; prompt: string; onTemporarySession?: TemporarySessionListener },
 ): Promise<string> {
-    const startedAt = performance.now();
     const created = await client.session.create({ body: { title: "Language Tutor (temporary)" } });
-    const sessionCreatedAt = performance.now();
     if (created.error || !created.data) throw new Error("Could not create the temporary tutor session.");
     input.onTemporarySession?.(created.data.id, true);
 
@@ -134,53 +134,36 @@ async function askTutor(
             await client.session.delete({ path: { id: created.data.id } });
             sessionDeletedAt = performance.now();
         } finally {
-            const completedAt = sessionDeletedAt ?? performance.now();
             input.onTemporarySession?.(created.data.id, false);
-            if (client.app?.log) {
-                void client.app
-                    .log({
-                        body: {
-                            service: "language-tutor",
-                            level: "info",
-                            message: "[LT]Tutor request timing",
-                            extra: {
-                                model: `${input.model.providerID}/${input.model.modelID}`,
-                                createSessionMs: sessionCreatedAt - startedAt,
-                                modelRequestMs:
-                                    responseReceivedAt === undefined
-                                        ? undefined
-                                        : responseReceivedAt - sessionCreatedAt,
-                                deleteSessionMs:
-                                    responseReceivedAt === undefined ? undefined : completedAt - responseReceivedAt,
-                                totalMs: completedAt - startedAt,
-                            },
-                        },
-                    })
-                    .catch(() => {});
-            }
         }
     }
 }
 
 export function parseWritingIssues(response: string, nativeLang: string): WritingIssue[] {
     const candidate = response.trim();
-    if (candidate === "OK") {
-        return [];
-    }
+    if (/^OK[.!]?$/i.test(stripMarkdownFences(candidate).trim())) return [];
 
-    return candidate
+    return stripMarkdownFences(candidate)
         .split(/\r?\n/)
         .flatMap((line) => parseWritingIssueLine(line, nativeLang))
         .slice(0, 3);
 }
 
-function parseWritingIssueLine(line: string, nativeLang: string): WritingIssue[] {
-    const parts = line.split("|");
-    if (parts.length !== 3) {
-        return []; // invalid llm output!!!
-    }
+function stripMarkdownFences(value: string): string {
+    return value
+        .split(/\r?\n/)
+        .filter((line) => !/^\s*```(?:text|txt)?\s*$/i.test(line))
+        .join("\n");
+}
 
-    const rawCorrectionType = stringValue(parts[0]);
+// parseWritingIssueLine parses the standard format: <type>|<original>|<corrected> and
+// returns a WritingIssue if valid, otherwise an empty array.
+function parseWritingIssueLine(line: string, nativeLang: string): WritingIssue[] {
+    const candidate = line.trim().replace(/^(?:[-*+]\s+|\d+[.)]\s+)/, "");
+    const parts = candidate.split("|");
+    if (parts.length !== 3) return [];
+
+    const rawCorrectionType = normalizeCorrectionType(parts[0]);
     const original = stringValue(parts[1]);
     const corrected = stringValue(parts[2]);
     if (!isCorrectionType(rawCorrectionType) || !original || !corrected) {
@@ -192,6 +175,11 @@ function parseWritingIssueLine(line: string, nativeLang: string): WritingIssue[]
     const correctionType = localizedTypes[rawCorrectionType];
     if (!correctionType) return [];
     return [{ correctionType, original, corrected }];
+}
+
+function normalizeCorrectionType(value: unknown): string | undefined {
+    const normalized = stringValue(value)?.toLowerCase().replaceAll("_", " ");
+    return normalized;
 }
 
 function isCorrectionType(value: string | undefined): value is CorrectionType {
