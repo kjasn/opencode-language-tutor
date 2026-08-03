@@ -40,7 +40,7 @@ export const LanguageTutorPlugin: Plugin = async ({ client }) => {
             if (!shouldCheckPrompt(text)) return;
 
             const settings = await settingsStore.load();
-            if (!settings.writingCheckEnabled) return;
+            if (!settings.autoWriteCheck) return;
             void checkWritingInBackground(input.sessionID, output.message.id, text, output.message.model, settings);
         },
     };
@@ -53,22 +53,34 @@ export const LanguageTutorPlugin: Plugin = async ({ client }) => {
         settings: Awaited<ReturnType<SettingsStore["load"]>>,
     ): Promise<void> {
         try {
+            await client.app.log({
+                body: {
+                    service: "language-tutor",
+                    level: "info",
+                    message: "[LT]Test msg before calling llm",
+                },
+            });
+
             const issues = await checkWriting(client, text, settings, model, trackTemporarySession);
+            if (issues.length === 0) {
+                return;
+            }
+
             await tutorStateStore.update(sessionID, {
                 writing: { sourceMessageID: messageID, issues, updatedAt: Date.now() },
             });
-            const message = issues.length
-                ? issues.map((issue) => `${issue.reason} · ${issue.original} → ${issue.suggestion}`).join("\n")
-                : "No useful correction found.";
+            const message = issues
+                .map((issue) => `${issue.correctionType}: ${issue.original} -> ${issue.corrected}`)
+                .join("\n");
             await client.tui.showToast({
                 body: {
                     title: "Writing check",
                     message: message.slice(0, 180),
-                    variant: issues.length ? "info" : "success",
-                    duration: 5_000,
+                    variant: "info",
+                    duration: 8_000,
                 },
             });
-        } catch {
+        } catch (error) {
             await client.tui.showToast({
                 body: {
                     title: "Writing check",

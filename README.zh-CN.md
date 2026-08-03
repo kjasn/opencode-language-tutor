@@ -31,12 +31,12 @@ opencode
 默认配置为：学习英语，并使用简体中文作为母语。
 你可以通过 `/lang-tu` 命令修改设置。
 
-写作检查默认启用，自动翻译默认关闭。如果希望在每次智能体回复后自动显示翻译，请在 `/lang-tu` 中启用 **Auto-translate（自动翻译）**。
+自动写作检查默认启用。符合条件的用户消息发送后，写作检查会立即在后台启动，无需等待主智能体完成回复。自动翻译默认关闭；如果希望在每次智能体回复后自动显示翻译，请在 `/lang-tu` 中启用 **Auto-translate（自动翻译）**。
 
 ### 使用本地大语言模型
 
 <details>
-<summary>使用 Ollama 本地模型快速、低成本地完成翻译任务。</summary>
+<summary>使用 Ollama 本地模型快速、低成本地完成写作检查和翻译任务。</summary>
 
 例如，将以下配置添加到位于 `~/.config/opencode/opencode.json` 的 OpenCode 配置文件中：
 
@@ -53,8 +53,8 @@ opencode
         "baseURL": "http://localhost:11434/v1"
       },
       "models": {
-        "translategemma:4b-it-q4_K_M": {
-          "name": "translategemma:4b-it-q4_K_M"
+        "qwen2.5:7b": {
+          "name": "qwen2.5:7b"
         }
       }
     }
@@ -63,6 +63,8 @@ opencode
 ```
 
 </details>
+
+你可以在 `/lang-tu` 中分别选择写作检查模型和翻译模型。为了更快地显示写作检查 toast，建议使用小型、快速的通用指令模型。较大的本地模型可能会明显更慢，尤其是在 Ollama 需要将冷模型加载到内存时。
 
 ## 示例
 
@@ -84,18 +86,22 @@ opencode
 opencode debug config | rg -n -A12 -B2 '"language-tutor"'
 ```
 
-## 发布
+## 调试
 
-发布工作流仅在推送 `v*` 版本标签时运行。工作流会先对标签指向的提交运行类型检查和测试套件，然后再发布 Release。
-
-如需发布 GitHub Release，请推送版本标签：
+插件通过 OpenCode 的日志 API 写入诊断信息，而不会将日志打印到提示词输入面板。使用以下命令查找当前日志目录：
 
 ```sh
-git tag v0.1.0
-git push origin v0.1.0
+opencode debug paths
 ```
 
-推送 `v*` 标签后，工作流会创建带有自动生成发行说明以及 `.tar.gz` 和 `.zip` 源码归档的 GitHub Release。
+在另一个终端中跟踪此插件的日志（下面是默认日志路径）：
+
+```sh
+tail -f ~/.local/share/opencode/log/opencode.log \
+  | rg --line-buffered '\[LT\]'
+```
+
+每次独立的语言助手调用都会记录 `createSessionMs`、`modelRequestMs`、`deleteSessionMs` 和 `totalMs`。本地模型响应较慢时，通常可以通过 `modelRequestMs` 判断瓶颈是否来自模型加载或推理。
 
 ## 待办事项
 

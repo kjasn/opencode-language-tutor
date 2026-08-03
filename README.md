@@ -36,14 +36,16 @@ opencode
 Default configuration is set to learn English in simple Chinese.
 You can change the settings by `/lang-tu` command.
 
-Writing checks are enabled by default. Automatic translation is disabled by
-default, so enable **Auto-translate** in `/lang-tu` when you want translations
-after every assistant response.
+Automatic writing checks are enabled by default. They start in the background
+as soon as an eligible user message is sent, without waiting for the main
+assistant response. Automatic translation is disabled by default, so enable
+**Auto-translate** in `/lang-tu` when you want translations after every
+assistant response.
 
 ### Use Local LLM
 
 <details>
-<summary>Use Ollama local models for fast, low-cost translation tasks.</summary>
+<summary>Use Ollama local models for fast, low-cost writing-check and translation tasks.</summary>
 
 For example, add the following configuration to your OpenCode config file in `~/.config/opencode/opencode.json`:
 
@@ -60,8 +62,8 @@ Click [here](https://docs.ollama.com/integrations/opencode#opencode) for details
         "baseURL": "http://localhost:11434/v1"
       },
       "models": {
-        "translategemma:4b-it-q4_K_M": {
-          "name": "translategemma:4b-it-q4_K_M"
+        "qwen2.5:7b": {
+          "name": "qwen2.5:7b"
         }
       }
     }
@@ -70,6 +72,11 @@ Click [here](https://docs.ollama.com/integrations/opencode#opencode) for details
 ```
 
 </details>
+
+Writing-check and translation models can be selected independently in
+`/lang-tu`. For responsive writing-check toasts, prefer a small, fast general
+instruction model. Larger local models may take noticeably longer, especially
+when Ollama must load a cold model into memory.
 
 ## Example
 
@@ -104,21 +111,26 @@ Inspect the resolved configuration from the project root with:
 opencode debug config | rg -n -A12 -B2 '"language-tutor"'
 ```
 
-## Releases
+## Debugging
 
-The release workflow runs only when a `v*` version tag is pushed. It validates
-the tagged commit with the type check and test suite before publishing the
-release.
-
-To publish a GitHub release, push a version tag:
+The plugin writes diagnostics through OpenCode's logging API instead of
+printing into the prompt panel. Find the active log directory with:
 
 ```sh
-git tag v0.1.0
-git push origin v0.1.0
+opencode debug paths
 ```
 
-A `v*` tag creates a GitHub release with generated release notes and `.tar.gz`
-and `.zip` source archives.
+Follow this plugin's entries in another terminal (the default log path is shown
+below):
+
+```sh
+tail -f ~/.local/share/opencode/log/opencode.log \
+  | rg --line-buffered '\[LT\]'
+```
+
+Each isolated tutor call records `createSessionMs`, `modelRequestMs`,
+`deleteSessionMs`, and `totalMs`. In most slow local-model cases,
+`modelRequestMs` reveals whether model loading or inference is the bottleneck.
 
 ## TODO List
 
