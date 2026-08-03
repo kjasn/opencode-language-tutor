@@ -12,7 +12,7 @@ Keep new behavior in the smallest relevant module. Prefer importing with explici
 
 ## Documentation
 
-- `README.md` is the English README, and `README.zh-CN.md` is its Simplified Chinese translation.
+- `README.md` is the default Simplified Chinese README, and `README.en.md` is its English translation.
 - Keep both README files synchronized whenever either one changes. Preserve equivalent sections, commands, examples, warnings, and behavior descriptions in both languages.
 
 ## OpenCode Integration
